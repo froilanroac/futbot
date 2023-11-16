@@ -153,7 +153,7 @@ async def show_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def add_invited(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if database.get_list_state(): 
-        if (datetime.datetime.today().weekday() == DIA_INVITADOS and datetime.datetime.now().hour >= HORA_INVITADOS) or datetime.datetime.today().weekday() == 5:
+        if (datetime.datetime.today().weekday() == DIA_INVITADOS and datetime.datetime.now().hour >= HORA_INVITADOS) or datetime.datetime.today().weekday() == 4:
             total_lista = len(database.get_all_data('list')) + len(database.get_all_data('invitations'))
             if total_lista < LIMITE_LISTA:
                 if database.count_user_invitations(update.message.from_user.id) < MAXIMO_INVITADOS:
