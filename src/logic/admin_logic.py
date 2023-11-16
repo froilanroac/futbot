@@ -186,6 +186,10 @@ async def invalid_conversation_option(update: Update, context: ContextTypes.DEFA
     await admin_menu(update, context)
     return GO_BACK_MENU
 
+async def time_out_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text(text='Finishing conversation due to inactivity...')
+    await stop(update, context)
+
 # an specific admin conversation for adding members
 add_member_conversation_handler = ConversationHandler(
     entry_points=[MessageHandler(filters.Regex("^Add member$"), show_requests)],
@@ -221,7 +225,9 @@ admin_conversation_handler = ConversationHandler(
     states={
         VALIDATING_CODE: [MessageHandler(filters.TEXT & ~filters.COMMAND, autenticate_admin)],
         SELECTING_ACTION: admin_selection_handler,
-        INVITATION_FOR_DELETE : [MessageHandler(filters.TEXT & ~filters.COMMAND, delete_invited)]
+        INVITATION_FOR_DELETE : [MessageHandler(filters.TEXT & ~filters.COMMAND, delete_invited)],
+        ConversationHandler.TIMEOUT: [MessageHandler(filters.ALL, time_out_message)]
     },
     fallbacks=[CommandHandler("stop", stop), MessageHandler(filters.COMMAND, stop)],
+    conversation_timeout=60
 )
