@@ -36,7 +36,6 @@ async def admin_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
 async def stop_nested(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''Stop conversation from within nested conversation.'''
     await update.message.reply_text("Bye admin!", reply_markup=ReplyKeyboardRemove())
-    context.user_data['in_conversation'] = False
     return STOPPING
 
 async def end_current_conversation(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -48,7 +47,6 @@ async def end_current_conversation(update: Update, context: ContextTypes.DEFAULT
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''End Conversation by command.'''''
     await update.message.reply_text("Bye admin!", reply_markup=ReplyKeyboardRemove())
-    context.user_data['in_conversation'] = False
     return ConversationHandler.END
 
 async def show_requests(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -83,6 +81,7 @@ async def save_member(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
     '''Save member in the list of his role'''
     role = update.callback_query.data
     request = context.user_data['add_member_request']
+    del context.user_data['add_member_request']
     request['role'] = role
     response = database.save_data('members', request)
     if response == 'Data saved successfully':
@@ -159,13 +158,9 @@ async def delete_invited(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 async def admin_ask_code(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''Verify admin code'''
-    if 'in_conversation' not in context.user_data.keys() or context.user_data['in_conversation'] == False:
-        context.user_data['in_conversation'] = True
-        await update.message.reply_text('Admin code:')
-        return VALIDATING_CODE
-    elif context.user_data['in_conversation'] == True:
-        await update.message.reply_text('You are already in a conversation, please finish it first')
-        return ConversationHandler.END
+    await update.message.reply_text('Admin code:')
+    return VALIDATING_CODE
+
 
     
 async def autenticate_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

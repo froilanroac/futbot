@@ -39,13 +39,11 @@ residente_exresidente_markup = ReplyKeyboardMarkup(residente_exresidente_keyboar
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''Stop conversation'''
     await update.message.reply_text(text='Conversación finalizada', reply_markup=ReplyKeyboardRemove())
-    context.user_data['in_conversation'] = False
     return ConversationHandler.END
 
 async def stop_nested(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''Stop conversation'''
     await update.message.reply_text(text='Conversación finalizada', reply_markup=ReplyKeyboardRemove())
-    context.user_data['in_conversation'] = False
     return STOPPING
 
 async def user_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -55,20 +53,16 @@ async def user_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def autenticate_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     '''Autenticate user'''
-    if 'in_conversation' not in context.user_data.keys() or context.user_data['in_conversation'] == False:
-        context.user_data['in_conversation'] = True
-        user = database.get_one('members',update.message.from_user.id)
-        if user:
-            context.user_data['user_role'] = user['role']
-            await update.message.reply_text(text='Usuario autenticado')
-            await user_menu(update, context)
-            return SELECTING_ACTION
-        else:
-            await update.message.reply_text(text='No estas registrado en el sistema. Si deseas registrarte, por favor escribe si, de lo contrario no.', reply_markup=user_yes_no_markup)
-            return REQUEST
-    elif context.user_data['in_conversation'] == True:
-        await update.message.reply_text(text='Ya estas en una conversacion, por favor escribe /stop si deseas terminarla.')
-        return ConversationHandler.END
+    user = database.get_one('members',update.message.from_user.id)
+    if user:
+        context.user_data['user_role'] = user['role']
+        await update.message.reply_text(text='Usuario autenticado')
+        await user_menu(update, context)
+        return SELECTING_ACTION
+    else:
+        await update.message.reply_text(text='No estas registrado en el sistema. Si deseas registrarte, por favor escribe si, de lo contrario no.', reply_markup=user_yes_no_markup)
+        return REQUEST
+
     
     
 async def ask_for_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -227,5 +221,5 @@ user_conversation_handler = ConversationHandler(
         ConversationHandler.TIMEOUT: [MessageHandler(filters.ALL, time_out_message)]
     },
     fallbacks=[CommandHandler("stop", stop), MessageHandler(filters.COMMAND, stop)],
-    conversation_timeout=60
+    conversation_timeout=60,
 )
